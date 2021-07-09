@@ -31,6 +31,9 @@
     "start": "parcel src/webapp/index.html",
     "test": "ts-node src/cli/index.ts"
   },
+  "browser": {
+    "fs": false
+  },
   "browserslist": [
     "> 5%"
   ],

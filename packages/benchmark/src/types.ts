@@ -3,6 +3,7 @@ export interface TestInterface {
     createBoxShape: (hx: number, hy: number) => any;
     createBoxBody: (shape: any, x: number, y: number, density: number) => any;
     step: (timeStep: number, velocityIterations: number, positionIterations: number) => void;
+    cleanup?: () => void;
 }
 
 export interface XY {
@@ -10,4 +11,4 @@ export interface XY {
     y: number;
 }
 
-export type TestFactory = (gravity: XY, edgeV1: XY, edgeV2: XY, edgeDensity: number) => TestInterface;
+export type TestFactory = (gravity: XY, edgeV1: XY, edgeV2: XY, edgeDensity: number) => Promise<TestInterface>;

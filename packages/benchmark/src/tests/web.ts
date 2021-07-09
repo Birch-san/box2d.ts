@@ -7,7 +7,7 @@ const { b2Vec2 } = Box2D.Common.Math;
 const { b2BodyDef, b2Body, b2World, b2FixtureDef } = Box2D.Dynamics;
 const { b2PolygonShape } = Box2D.Collision.Shapes;
 
-export const webFactory: TestFactory = (gravity, edgeV1, edgeV2, edgeDensity) => {
+export const webFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeDensity) => {
     const world = new b2World(new b2Vec2(gravity.x, gravity.y));
     const ground = world.CreateBody(new b2BodyDef());
 

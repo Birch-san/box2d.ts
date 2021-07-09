@@ -20,9 +20,10 @@ function setupWorld(test: TestInterface) {
     // Setup world
     const shape = test.createBoxShape(BOX_SIZE.x, BOX_SIZE.y);
     const x = { ...START_X };
+    const y = { ...x };
 
     for (let i = 0; i < PYRAMID_SIZE; ++i) {
-        const y = { ...x };
+        ({ x: y.x, y: y.y } = x);
 
         for (let j = i; j < PYRAMID_SIZE; ++j) {
             test.createBoxBody(shape, y.x, y.y, BOX_DENSITY);
@@ -104,8 +105,8 @@ function percentile(values: number[], pc: number) {
     return values[rank];
 }
 
-export function prepareTests(factories: TestFactory[]) {
-    return factories.map((factory) => factory(GRAVITY, EDGE_V1, EDGE_V2, GROUND_DENSITY));
+export function prepareTests(factories: TestFactory[]): Promise<TestInterface>[] {
+    return factories.map<Promise<TestInterface>>((factory) => factory(GRAVITY, EDGE_V1, EDGE_V2, GROUND_DENSITY));
 }
 
 export function runTest(test: TestInterface) {
@@ -138,14 +139,15 @@ export async function runTestAsync(test: TestInterface, progress: ProgressFunc) 
 
 export type TestResult = ReturnType<typeof runTest>;
 
-export function runAllTests(factories: TestFactory[]) {
-    const tests = prepareTests(factories);
+export async function runAllTests(factories: TestFactory[]): Promise<TestResult[]> {
+    const tests: TestInterface[] = await Promise.all(prepareTests(factories));
     const results: TestResult[] = [];
 
     console.log("Running Benchmarks:");
     for (const test of tests) {
         const result = runTest(test);
         results.push(result);
+        test.cleanup?.();
         console.log(` ✓ ${result.name}`);
     }
 
@@ -155,7 +157,7 @@ export function runAllTests(factories: TestFactory[]) {
 const noop = () => undefined;
 
 export async function runAllTestsAsync(factories: TestFactory[]) {
-    const tests = prepareTests(factories);
+    const tests: TestInterface[] = await Promise.all(prepareTests(factories));
     console.log("Running Benchmarks:");
     const results: TestResult[] = [];
     for (const test of tests) {
@@ -163,6 +165,7 @@ export async function runAllTestsAsync(factories: TestFactory[]) {
         const result = await runTestAsync(test, noop);
         console.log(` ✓ ${result.name}`);
         results.push(result);
+        test.cleanup?.();
     }
 
     return results.sort((a, b) => a.avg - b.avg);

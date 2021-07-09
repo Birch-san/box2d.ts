@@ -5,7 +5,7 @@ import { b2World, b2Vec2, b2EdgeShape, b2PolygonShape, b2_dynamicBody, b2BodyDef
 
 import { TestFactory } from "../types";
 
-export const box2dJsFactory: TestFactory = (gravity, edgeV1, edgeV2, edgeDensity) => {
+export const box2dJsFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeDensity) => {
     const world = new b2World(new b2Vec2(gravity.x, gravity.y));
     const ground = world.CreateBody(new b2BodyDef());
 
