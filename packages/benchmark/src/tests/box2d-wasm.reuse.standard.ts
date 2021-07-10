@@ -24,11 +24,17 @@ export const box2dWasmReuseNoSimdFactory: TestFactory = async (gravity, edgeV1, 
   const bd = new b2BodyDef();
   const ground = world.CreateBody(bd);
 
-  vec0.Set(edgeV1.x, edgeV1.y);
-  const vec1 = new b2Vec2(edgeV2.x, edgeV2.y);
   const edgeShape = new b2EdgeShape();
-  edgeShape.SetTwoSided(vec0, vec1);
-  destroy(vec1);
+  {
+    const { x, y } = edgeV1;
+    vec0.Set(x, y);
+  }
+  {
+    const { x, y } = edgeV2;
+    const vec1 = new b2Vec2(x, y);
+    edgeShape.SetTwoSided(vec0, vec1);
+    destroy(vec1);
+  }
   ground.CreateFixture(edgeShape, edgeDensity);
   destroy(edgeShape);
 
@@ -44,6 +50,7 @@ export const box2dWasmReuseNoSimdFactory: TestFactory = async (gravity, edgeV1, 
     },
     createBoxBody(shape: Box2D.b2PolygonShape, x: number, y: number, density: number): void {
       vec0.Set(x, y);
+      bd.set_position(vec0);
       const body = world.CreateBody(bd);
       body.CreateFixture(shape, density);
     },
