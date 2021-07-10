@@ -1,4 +1,5 @@
 import { tests } from "..";
+import type { TestInterface } from "../types";
 import { prepareTests, resultsToMarkdown, runTestAsync, TestResult } from "../testRunner";
 import { getBrowserInfo } from "./browserInfo";
 
@@ -8,7 +9,15 @@ const ratioHead = document.getElementById("ratio") as HTMLElement;
 const textArea = document.querySelector("textarea") as HTMLTextAreaElement;
 const copyButton = document.getElementById("copy") as HTMLButtonElement;
 
-const testRows = prepareTests(tests).map((test) => {
+interface TestRow {
+  row: HTMLTableRowElement;
+  test: TestInterface;
+  begin(): void;
+  progress(value: number, max: number): void;
+  end(result: TestResult): void;
+  final(ratioValue: number): void;
+}
+const makeTestRow = (test: TestInterface): TestRow => {
     const row = document.createElement("tr");
     tbody.appendChild(row);
     const name = document.createElement("td");
@@ -45,13 +54,17 @@ const testRows = prepareTests(tests).map((test) => {
             tbody.appendChild(row);
         },
     };
-});
+};
 
-type TestResultAndRow = TestResult & { testRow: typeof testRows[0] };
+interface TestResultAndRow extends TestResult {
+  testRow: TestRow
+};
 
 export async function runAllTestsAsync() {
     ratioHead.textContent = "";
     const results: TestResultAndRow[] = [];
+    const testInterfaces: TestInterface[] = await Promise.all(prepareTests(tests));
+    const testRows: TestRow[] = testInterfaces.map(makeTestRow);
     for (const testRow of testRows) {
         testRow.begin();
         // eslint-disable-next-line no-await-in-loop

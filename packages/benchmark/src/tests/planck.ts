@@ -4,7 +4,7 @@ import { World, Vec2, Edge, Box } from "planck-js";
 
 import { TestFactory } from "../types";
 
-export const planckFactory: TestFactory = (gravity, edgeV1, edgeV2, edgeDensity) => {
+export const planckFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeDensity) => {
     const world = new World({
         gravity: new Vec2(gravity.x, gravity.y),
     });

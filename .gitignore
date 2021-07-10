@@ -3,3 +3,5 @@ dist/
 .cache/
 *.tgz
 lerna-debug.log
+/docs/benchmark/
+/.parcel-cache/
