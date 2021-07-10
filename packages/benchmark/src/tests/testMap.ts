@@ -5,6 +5,4 @@ export * from "./flyover-box2d";
 export * from "./html5";
 export * from "./web";
 export * from "./box2d-wasm.standard";
-export * from "./box2d-wasm.simd";
 export * from "./box2d-wasm.reuse.standard";
-export * from "./box2d-wasm.reuse.simd";

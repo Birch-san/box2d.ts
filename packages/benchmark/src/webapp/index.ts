@@ -63,6 +63,7 @@ interface TestResultAndRow extends TestResult {
 export async function runAllTestsAsync() {
     ratioHead.textContent = "";
     const results: TestResultAndRow[] = [];
+    console.log(tests)
     const testInterfaces: TestInterface[] = await Promise.all(prepareTests(tests));
     const testRows: TestRow[] = testInterfaces.map(makeTestRow);
     for (const testRow of testRows) {

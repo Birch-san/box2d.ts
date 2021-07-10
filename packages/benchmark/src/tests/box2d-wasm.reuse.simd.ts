@@ -1,4 +1,5 @@
 import "../fixprocess";
+import { hasSIMD } from './hasSimd';
 
 // bypass box2d-wasm entrypoint to explicitly ask for SIMD flavour
 import Box2DFactory from "box2d-wasm/dist/umd/Box2D.simd";
@@ -8,6 +9,10 @@ import wasmSimd from 'url:../../../../node_modules/box2d-wasm/dist/umd/Box2D.sim
 import type { TestFactory, TestInterface } from "../types";
 
 export const box2dWasmReuseSimdFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeDensity): Promise<TestInterface> => {
+  if (!hasSIMD) {
+    throw new Error('Cannot run SIMD test on platform which lacks SIMD support.');
+  }
+
   const { b2World, b2Vec2, b2EdgeShape, b2PolygonShape, b2_dynamicBody, b2BodyDef, destroy, getPointer, NULL } = await Box2DFactory({
     locateFile: (url: string, scriptDirectory: string): string => {
       switch (url) {
