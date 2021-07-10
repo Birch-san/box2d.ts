@@ -44,11 +44,11 @@
     "planck-js": "^0.3.22",
     "@box2d/particles": "^0.8.0",
     "liquidfun-emscripten": "1.1.4",
-    "box2d-wasm": "6.0.2",
+    "box2d-wasm": "6.0.4",
     "liquidfun-wasm": "6.0.2"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.12.4",
+    "parcel": "2.0.0-beta.3.1",
     "rimraf": "^3.0.2",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.3"

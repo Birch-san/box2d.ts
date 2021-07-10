@@ -1,11 +1,23 @@
 import "../fixprocess";
 import Box2DFactory from "box2d-wasm";
+import wasm from 'url:../../../../node_modules/box2d-wasm/dist/umd/Box2D.wasm';
+import wasmSimd from 'url:../../../../node_modules/box2d-wasm/dist/umd/Box2D.simd.wasm';
 
 import type { TestFactory, TestInterface } from "../types";
 
 export const box2dWasmFastFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeDensity): Promise<TestInterface> => {
-  const { default: Box2DFactory_ } = Box2DFactory as unknown as { default: typeof Box2DFactory };
-  const { b2World, b2Vec2, b2EdgeShape, b2PolygonShape, b2_dynamicBody, b2BodyDef, destroy, getPointer, NULL } = await Box2DFactory_();
+  const { b2World, b2Vec2, b2EdgeShape, b2PolygonShape, b2_dynamicBody, b2BodyDef, destroy, getPointer, NULL } = await Box2DFactory({
+    locateFile: (url: string, scriptDirectory: string): string => {
+      switch (url) {
+        case 'Box2D.simd.wasm':
+          return wasmSimd;
+        case 'Box2D.wasm':
+          return wasm;
+        default:
+          return `${scriptDirectory}${url}`;
+      }
+    }
+  });
   const vec0 = new b2Vec2(gravity.x, gravity.y);
   const world = new b2World(vec0);
 
