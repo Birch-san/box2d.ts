@@ -1,20 +1,20 @@
 import "../fixprocess";
-import Box2DFactory from "box2d-wasm";
-import wasm from 'url:../../../../node_modules/box2d-wasm/dist/umd/Box2D.wasm';
+
+// bypass box2d-wasm entrypoint to explicitly ask for SIMD flavour
+import Box2DFactory from "../../../../node_modules/box2d-wasm/dist/umd/Box2D.simd";
+// tell Parcel to serve WASM asset
 import wasmSimd from 'url:../../../../node_modules/box2d-wasm/dist/umd/Box2D.simd.wasm';
 
 import type { TestFactory, TestInterface } from "../types";
 
-export const box2dWasmFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeDensity): Promise<TestInterface> => {
-  const { b2World, b2Vec2, b2EdgeShape, b2PolygonShape, b2_dynamicBody, b2BodyDef, destroy, getPointer, NULL } = await Box2DFactory({
+export const box2dWasmSimdFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeDensity): Promise<TestInterface> => {
+  const { b2World, b2Vec2, b2EdgeShape, b2PolygonShape, b2_dynamicBody, b2BodyDef, destroy, getCache, getPointer, NULL } = await Box2DFactory({
     locateFile: (url: string, scriptDirectory: string): string => {
       switch (url) {
         case 'Box2D.simd.wasm':
           return wasmSimd;
-        case 'Box2D.wasm':
-          return wasm;
         default:
-          return `${scriptDirectory}${url}`;
+          throw new Error(`Box2D requested unexpected asset '${scriptDirectory}${url}'; expected '${scriptDirectory}Box2D.simd.wasm' only.`);
       }
     }
   });
@@ -40,7 +40,7 @@ export const box2dWasmFactory: TestFactory = async (gravity, edgeV1, edgeV2, edg
   destroy(edgeShape);
 
   return {
-    name: "box2d-wasm",
+    name: "box2d-wasm (SIMD)",
     createBoxShape(hx: number, hy: number): Box2D.b2PolygonShape {
       const box = new b2PolygonShape();
       box.SetAsBox(hx, hy);
@@ -66,7 +66,12 @@ export const box2dWasmFactory: TestFactory = async (gravity, edgeV1, edgeV2, edg
         world.DestroyBody(body);
       }
       destroy(world);
-      // unfortunately, for a fair comparison I've had to leak every `new` created during the benchmark
+      // free references to everything we leaked during benchmark
+      for (const b2Class of [b2BodyDef, b2Vec2, b2PolygonShape]) {
+        for(const instance of Object.values(getCache(b2Class))) {
+          destroy(instance);
+        }
+      }
     }
   };
 };

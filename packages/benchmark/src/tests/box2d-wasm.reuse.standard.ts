@@ -1,20 +1,20 @@
 import "../fixprocess";
-import Box2DFactory from "box2d-wasm";
+
+// bypass box2d-wasm entrypoint to explicitly ask for non-SIMD flavour
+import Box2DFactory from "box2d-wasm/dist/umd/Box2D";
+// tell Parcel to serve WASM asset
 import wasm from 'url:../../../../node_modules/box2d-wasm/dist/umd/Box2D.wasm';
-import wasmSimd from 'url:../../../../node_modules/box2d-wasm/dist/umd/Box2D.simd.wasm';
 
 import type { TestFactory, TestInterface } from "../types";
 
-export const box2dWasmFastFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeDensity): Promise<TestInterface> => {
+export const box2dWasmReuseNoSimdFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeDensity): Promise<TestInterface> => {
   const { b2World, b2Vec2, b2EdgeShape, b2PolygonShape, b2_dynamicBody, b2BodyDef, destroy, getPointer, NULL } = await Box2DFactory({
     locateFile: (url: string, scriptDirectory: string): string => {
       switch (url) {
-        case 'Box2D.simd.wasm':
-          return wasmSimd;
         case 'Box2D.wasm':
           return wasm;
         default:
-          return `${scriptDirectory}${url}`;
+          throw new Error(`Box2D requested unexpected asset '${scriptDirectory}${url}'; expected '${scriptDirectory}Box2D.wasm' only.`);
       }
     }
   });
@@ -37,7 +37,7 @@ export const box2dWasmFastFactory: TestFactory = async (gravity, edgeV1, edgeV2,
   const box = new b2PolygonShape();
 
   return {
-    name: "box2d-wasm (idiomatic)",
+    name: "box2d-wasm (object re-use) (non-SIMD)",
     createBoxShape(hx: number, hy: number): Box2D.b2PolygonShape {
       box.SetAsBox(hx, hy);
       return box;
