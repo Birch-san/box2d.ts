@@ -1,17 +1,31 @@
 import "../fixprocess";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { b2World, b2Vec2, b2EdgeShape, b2PolygonShape, b2_dynamicBody, b2BodyDef } from "box2d.js";
+import { b2World, b2Vec2, b2EdgeShape, b2PolygonShape, b2_dynamicBody, b2BodyDef, destroy, getCache, getPointer, NULL } from "box2d.js";
 
 import { TestFactory } from "../types";
 
 export const box2dJsFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeDensity) => {
-    const world = new b2World(new b2Vec2(gravity.x, gravity.y));
-    const ground = world.CreateBody(new b2BodyDef());
+    const vec0 = new b2Vec2(gravity.x, gravity.y);
+    const world = new b2World(vec0);
+    const bd = new b2BodyDef();
+    const ground = world.CreateBody(bd);
+    destroy(bd);
 
     const edgeShape = new b2EdgeShape();
-    edgeShape.Set(new b2Vec2(edgeV1.x, edgeV1.y), new b2Vec2(edgeV2.x, edgeV2.y));
-    ground.CreateFixture(edgeShape as any, edgeDensity);
+    {
+      const { x, y } = edgeV1;
+      vec0.Set(x, y);
+    }
+    {
+      const { x, y } = edgeV2;
+      const vec1 = new b2Vec2(x, y);
+      edgeShape.Set(vec0, vec1);
+      destroy(vec1);
+    }
+    destroy(vec0);
+    ground.CreateFixture(edgeShape, edgeDensity);
+    destroy(edgeShape);
 
     return {
         name: "box2d.js",
@@ -30,5 +44,17 @@ export const box2dJsFactory: TestFactory = async (gravity, edgeV1, edgeV2, edgeD
         step(timeStep: number, velocityIterations: number, positionIterations: number) {
             world.Step(timeStep, velocityIterations, positionIterations);
         },
+        cleanup(): void {
+          for (let body = world.GetBodyList(); getPointer(body) !== getPointer(NULL); body = body.GetNext()) {
+            world.DestroyBody(body);
+          }
+          destroy(world);
+          // free references to everything we leaked during benchmark
+          for (const b2Class of [b2BodyDef, b2Vec2, b2PolygonShape]) {
+            for(const instance of Object.values(getCache(b2Class))) {
+              destroy(instance);
+            }
+          }
+        }
     };
 };
